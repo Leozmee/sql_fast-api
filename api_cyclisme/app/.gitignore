@@ -45,3 +45,5 @@ logs/
 # Fichiers temporaires
 *.tmp
 *.bak
+
+echo ".venv/" >> .gitignore

@@ -9,6 +9,7 @@ from app.schemas.user import UserCreate, UserRead
 from app.schemas.token import Token
 from app.auth.jwt import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 
+
 router = APIRouter(tags=["Authentication"])
 
 @router.post("/login", response_model=Token)
