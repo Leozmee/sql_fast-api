@@ -19,5 +19,6 @@ class Athlete(SQLModel, table=True):
     vo2max: Optional[float] = Field(default=None, sa_column=Column("vo2max", Float))
     
     
+    
     user: "User" = Relationship(back_populates="athletes")
     tests: List["Test"] = Relationship(back_populates="athlete")
