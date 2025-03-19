@@ -6,6 +6,7 @@ import sqlite3
 import datetime
 from typing import List
 from pydantic import BaseModel
+import jwt
 
 
 SECRET_KEY = "your_secret_key"
