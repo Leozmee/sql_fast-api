@@ -6,7 +6,7 @@ from uuid import UUID
 from app.db.database import get_db
 from app.models.user import User
 from app.schemas.user import UserCreate, UserRead, UserUpdate
-from app.auth.jwt import get_current_user, get_current_staff_user
+from app.auth.jwt import get_current_user
 
 router = APIRouter(
     prefix="/users",
@@ -19,7 +19,7 @@ def create_user(user_data: UserCreate, db: Session = Depends(get_db)):
     Création d'un nouvel utilisateur.
     """
     # Vérification si l'email existe déjà
-    existing_user = db.exec(select(User).where(User.email == user_data.email)).first()
+    existing_user = db.query(User).filter(User.email == user_data.email).first()
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -43,3 +43,11 @@ def create_user(user_data: UserCreate, db: Session = Depends(get_db)):
     db.refresh(new_user)
     
     return new_user
+
+
+@router.get("/me", response_model=UserRead)
+def read_users_me(current_user: User = Depends(get_current_user)):
+    """
+    Récupère les informations de l'utilisateur connecté.
+    """
+    return current_user

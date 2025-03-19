@@ -20,7 +20,7 @@ async def login_for_access_token(
     """
     Obtient un token JWT pour l'authentification.
     """
-    user = db.exec(select(User).where(User.email == form_data.username)).first()
+    user = db.query(User).filter(User.email == form_data.username).first()
     
     if not user or not user.verify_password(form_data.password):
         raise HTTPException(

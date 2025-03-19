@@ -1,24 +1,24 @@
-from sqlalchemy import Column, String, Boolean
-from sqlmodel import SQLModel, Field, Relationship
-from typing import Optional, List, TYPE_CHECKING
-from uuid import uuid4, UUID
+from sqlalchemy import Column, String, Boolean, Integer, ForeignKey
+from sqlalchemy.orm import relationship
+from uuid import uuid4
 import bcrypt
 
-if TYPE_CHECKING:
-    from app.models.athlete import Athlete
+from app.db.database import Base
 
-class User(SQLModel, table=True):
-    id: UUID = Field(default_factory=uuid4, primary_key=True)
-    email: str = Field(sa_column=Column("email", String, nullable=False, unique=True, index=True))
-    hashed_password: str = Field(sa_column=Column("hashed_password", String, nullable=False))
-    is_staff: bool = Field(default=False)
-    is_active: bool = Field(default=True)
-    first_name: Optional[str] = Field(default=None, sa_column=Column("first_name", String))
-    last_name: Optional[str] = Field(default=None, sa_column=Column("last_name", String))
-    username: Optional[str] = Field(default=None, sa_column=Column("username", String))
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    email = Column(String, unique=True, index=True, nullable=False)
+    hashed_password = Column(String, nullable=False)
+    is_staff = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=True)
+    first_name = Column(String, nullable=True)
+    last_name = Column(String, nullable=True)
+    username = Column(String, nullable=True)
     
     
-    athletes: List["Athlete"] = Relationship(back_populates="user")
+    athletes = relationship("Athlete", back_populates="user", cascade="all, delete-orphan")
 
     def verify_password(self, password: str) -> bool:
         """Vérifie si le mot de passe fourni correspond au mot de passe haché stocké."""

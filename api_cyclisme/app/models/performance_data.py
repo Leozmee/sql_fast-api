@@ -1,22 +1,21 @@
-from sqlalchemy import Column, Float, Integer
-from sqlmodel import SQLModel, Field, Relationship
-from uuid import uuid4, UUID
+# app/models/performance_data.py
+from sqlalchemy import Column, String, Float, Integer, ForeignKey
+from sqlalchemy.orm import relationship
+from uuid import uuid4
 
-from typing import TYPE_CHECKING
+from app.db.database import Base
 
-if TYPE_CHECKING:
-    from app.models.test import Test
+class PerformanceData(Base):
+    __tablename__ = "performance_data"
 
-
-class PerformanceData(SQLModel, table=True):
-    id: UUID = Field(default_factory=uuid4, primary_key=True)
-    test_id: UUID = Field(foreign_key="test.id")
-    time: int = Field(sa_column=Column("time", Integer, nullable=False))
-    power: float = Field(sa_column=Column("power", Float, nullable=False))
-    oxygen: float = Field(sa_column=Column("oxygen", Float, nullable=False))
-    cadence: float = Field(sa_column=Column("cadence", Float, nullable=False))
-    heart_rate: float = Field(sa_column=Column("heart_rate", Float, nullable=False))
-    respiration_freq: float = Field(sa_column=Column("respiration_freq", Float, nullable=False))
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    test_id = Column(String(36), ForeignKey("tests.id"), nullable=False)
+    time = Column(Integer, nullable=False)
+    power = Column(Float, nullable=False)
+    oxygen = Column(Float, nullable=False)
+    cadence = Column(Float, nullable=False)
+    heart_rate = Column(Float, nullable=False)
+    respiration_freq = Column(Float, nullable=False)
     
-   
-    test: "Test" = Relationship(back_populates="performance_data")
+    
+    test = relationship("Test", back_populates="performance_data")
