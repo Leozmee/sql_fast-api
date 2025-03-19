@@ -1,0 +1,37 @@
+# Ignorer l'environnement virtuel
+.venv/
+venv/
+
+# Ignorer les fichiers d'environnement
+.env
+.env.local
+.env.*.local
+
+# Ignorer la base de données
+cyclist_database/
+cyclist_database.db
+
+# Ignorer les fichiers compilés Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignorer les logs et fichiers temporaires
+*.log
+logs/
+tmp/
+*.pid
+
+# Ignorer les dépendances installées (si applicable)
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Ignorer les fichiers de l'IDE (VSCode, PyCharm, etc.)
+.vscode/
+.idea/
+*.iml
+
+# Ignorer les fichiers spécifiques à MacOS et Linux
+.DS_Store
+Thumbs.db
