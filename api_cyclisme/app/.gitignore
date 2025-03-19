@@ -1,0 +1,49 @@
+# Base de données SQLite
+*.db
+*.db-journal
+cyclist_database.db
+
+# Fichiers Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Environnements virtuels
+.venv/
+ENV/
+env/
+.env
+
+# Fichiers de configuration d'IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Fichiers de logs
+*.log
+logs/
+
+# Fichiers temporaires
+*.tmp
+*.bak
+
+echo ".venv/" >> .gitignore
