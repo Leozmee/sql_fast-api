@@ -14,7 +14,7 @@ from app.schemas.token import TokenData
 
 load_dotenv() 
 
-SECRET_KEY = os.getenv("SECRET_KEY", "default_development_key_not_for_production")
+SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 
@@ -54,9 +54,9 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
         token_data = TokenData(user_id=user_id)
     except JWTError:
         raise credentials_exception
-    
-    user = db.exec(select(User).where(User.id == UUID(token_data.user_id))).first()
-    
+
+    user = db.query(User).filter(User.id == token_data.user_id).first()
+
     if user is None:
         raise credentials_exception
     
