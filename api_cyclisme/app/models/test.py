@@ -1,4 +1,3 @@
-# app/models/test.py
 from sqlalchemy import Column, String, Float, Integer, ForeignKey, Date, Text
 from sqlalchemy.orm import relationship
 from uuid import uuid4

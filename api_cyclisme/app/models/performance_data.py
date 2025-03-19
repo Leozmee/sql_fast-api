@@ -1,4 +1,3 @@
-# app/models/performance_data.py
 from sqlalchemy import Column, String, Float, Integer, ForeignKey
 from sqlalchemy.orm import relationship
 from uuid import uuid4
