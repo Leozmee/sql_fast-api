@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from app.database import initialize_database
-from app.routers import auth, users, athletes, performances
+from app.endpoints import auth, users, athletes, performances
 
 app = FastAPI(title="Cyclist Performance API")
 

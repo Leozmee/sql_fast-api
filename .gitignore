@@ -13,6 +13,7 @@ cyclist_database.db
 
 # Ignorer les fichiers compilés Python
 __pycache__/
+__pycache__
 *.pyc
 *.pyo
 *.pyd
