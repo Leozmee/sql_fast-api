@@ -1,7 +1,16 @@
+from decimal import ROUND_HALF_EVEN
 import streamlit as st
 import pandas as pd
 import sqlite3
-import bcrypt
+import json 
+from datetime import datetime
+import requests
+
+API_URL = "http://127.0.0.1:8000"
+
+st.set_page_config(page_title="Cyclist Performance", layout="wide")
+
+
 
 # Initialize session state
 if "role" not in st.session_state:
@@ -56,7 +65,7 @@ def login():
     st.text_input("Password", type="password")
     st.button
     if st.button("Log in"):
-        st.session_state.role = role
+        st.session_state.role = ROUND_HALF_EVEN
         st.rerun()
 
 

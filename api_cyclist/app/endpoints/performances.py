@@ -3,27 +3,28 @@ from typing import List
 import sqlite3
 from app.database import get_db_connection
 from app.models.performance import AthletePerformance, PerformanceResponse, StatsResponse
-from app.utils.security import get_current_user
+from app.utils.security import get_current_user, get_current_staff_user
 
 router = APIRouter(prefix="/performances", tags=["performances"])
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-def add_performance(performance: AthletePerformance, current_user = Depends(get_current_user)):
+def add_performance(performance: AthletePerformance, current_user = Depends(get_current_staff_user)):
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
         cursor.execute(
             """
             INSERT INTO Performance (
-                user_id, time, power,
-                oxygen, cadence, heart_rate, respiration_frequency
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                user_id, time, power, 
+                vo2_max, oxygen, cadence, heart_rate, respiration_frequency
+            ) VALUES (?, ?, ?, ?, ?, ?, ? ,?)
             """,
             (
                 performance.user_id,
                 performance.time,
                 performance.power,
                 performance.oxygen,
+                performance.vo2_max,
                 performance.cadence,
                 performance.heart_rate,
                 performance.respiration_frequency
@@ -71,7 +72,7 @@ def get_stats(current_user = Depends(get_current_user)):
     return stats
 
 @router.get("/user/{user_id}", response_model=List[PerformanceResponse])
-def get_user_performances(user_id: int, current_user = Depends(get_current_user)):
+def get_user_performances(user_id: int, current_user = Depends(get_current_staff_user)):
     conn = get_db_connection()
     performances = conn.execute(
         "SELECT * FROM Performance WHERE user_id = ? ORDER BY time ASC", 
@@ -79,3 +80,66 @@ def get_user_performances(user_id: int, current_user = Depends(get_current_user)
     ).fetchall()
     conn.close()
     return [dict(p) for p in performances] if performances else []
+
+@router.patch("/{performance_id}")
+async def update_performance(performance_id: int, performance: AthletePerformance, current_user: dict = Depends(get_current_staff_user)):
+    print(current_user)
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute(
+            """
+            UPDATE Performance SET power = ?, heart_rate = ?, vo2_max = ?, respiration_frequency = ?, cadence = ?
+            WHERE performance_id = ? AND user_id = ?
+            """,
+            (performance.power, performance.heart_rate, performance.vo2_max, performance.respiration_frequency, performance.cadence, performance_id, current_user['id'])
+        )
+        conn.commit()
+
+        if cursor.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Performance not found or you don't have permission to update")
+        
+        return {"message": "Performance updated successfully"}
+
+    except sqlite3.Error as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {e}") from e
+    finally:
+        conn.close()
+
+@router.delete("/{performance_id}")
+async def delete_performance(performance_id: int, current_user: dict = Depends(get_current_staff_user)):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute(
+            "DELETE FROM Performance WHERE performance_id = ? AND user_id = ?", (performance_id, current_user['id'])
+        )
+        conn.commit()
+
+        if cursor.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Performance not found or you don't have permission to delete")
+
+        return {"message": "Performance deleted successfully"}
+
+    except sqlite3.Error as e:
+        raise HTTPException(status_code=500, detail=f"Database error: {e}") from e
+    finally:
+        conn.close()
+
+# Route pour get les stats du current logged user
+@router.get("/my-stats", response_model=List[PerformanceResponse])
+def get_user_performances(current_user = Depends(get_current_user)):
+    user_id = current_user["id"]
+    conn = get_db_connection()
+    performances = conn.execute(
+        "SELECT * FROM Performance WHERE user_id = ? ORDER BY time ASC", 
+        (user_id,)
+    ).fetchall()
+    conn.close()
+    
+    if not performances:
+        return []
+        
+    return [dict(p) for p in performances]

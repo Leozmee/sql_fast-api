@@ -49,3 +49,11 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     if user is None:
         raise HTTPException(status_code=401, detail="User not found")
     return user
+
+def get_current_staff_user(current_user = Depends(get_current_user)):
+    if not current_user["is_staff"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient permissions. Staff role required."
+        )
+    return current_user

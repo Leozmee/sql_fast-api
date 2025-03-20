@@ -4,6 +4,7 @@ class AthletePerformance(BaseModel):
     user_id: int
     time: int
     power: float
+    vo2_max:float
     oxygen: int
     cadence: float
     heart_rate: float
@@ -14,6 +15,7 @@ class PerformanceResponse(BaseModel):
     user_id: int
     time: int
     power: float
+    vo2_max:float
     oxygen: int
     cadence: float
     heart_rate: float

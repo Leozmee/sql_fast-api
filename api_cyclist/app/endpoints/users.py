@@ -11,10 +11,13 @@ def register_user(user: UserCreate):
     conn = get_db_connection()
     cursor = conn.cursor()
     hashed_password = hash_password(user.password)
+
+    is_staff_value = 1 if user.is_staff == "YES" else 0
+
     try:
         cursor.execute(
-            "INSERT INTO User (user_name, first_name, last_name, email, password) VALUES (?, ?, ?, ?, ?)",
-            (user.user_name, user.first_name, user.last_name, user.email, hashed_password)
+            "INSERT INTO User (user_name, first_name, last_name, email, password, is_staff) VALUES (?, ?, ?, ?, ?, ?)",
+            (user.user_name, user.first_name, user.last_name, user.email, hashed_password, user.is_staff)
         )
         conn.commit()
         return {"message": "User registered successfully"}

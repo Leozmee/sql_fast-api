@@ -14,8 +14,3 @@ class AthleteResponse(BaseModel):
     weight: float
     height: float
 
-class AthleteUpdate(BaseModel):
-    gender: str
-    age: int
-    weight: float
-    height: float

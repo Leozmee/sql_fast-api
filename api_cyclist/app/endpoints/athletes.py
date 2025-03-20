@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 import sqlite3
 from app.database import get_db_connection
-from app.models.athlete import AthleteCreate, AthleteResponse, AthleteUpdate
-from app.utils.security import get_current_user
+from app.models.athlete import AthleteCreate, AthleteResponse
+from app.utils.security import get_current_staff_user
 
 router = APIRouter(prefix="/athletes", tags=["athletes"])
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-def add_athlete(athlete: AthleteCreate, current_user = Depends(get_current_user)):
+def add_athlete(athlete: AthleteCreate, current_user = Depends(get_current_staff_user)):
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
@@ -23,7 +23,7 @@ def add_athlete(athlete: AthleteCreate, current_user = Depends(get_current_user)
         conn.close()
 
 @router.get("/{user_id}", response_model=AthleteResponse)
-def get_athlete(user_id: int, current_user = Depends(get_current_user)):
+def get_athlete(user_id: int, current_user = Depends(get_current_staff_user)):
     conn = get_db_connection()
     athlete = conn.execute("SELECT * FROM Athlete WHERE user_id = ?", (user_id,)).fetchone()
     conn.close()
@@ -34,7 +34,7 @@ def get_athlete(user_id: int, current_user = Depends(get_current_user)):
     return dict(athlete)
 
 @router.put("/{user_id}", response_model=AthleteResponse)
-def update_athlete(user_id: int, athlete: AthleteUpdate, current_user = Depends(get_current_user)):
+def update_athlete(user_id: int, athlete: AthleteCreate, current_user = Depends(get_current_staff_user)):
     # Vérifier si l'athlète existe
     conn = get_db_connection()
     existing_athlete = conn.execute("SELECT * FROM Athlete WHERE user_id = ?", (user_id,)).fetchone()
@@ -66,7 +66,7 @@ def update_athlete(user_id: int, athlete: AthleteUpdate, current_user = Depends(
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}") from e
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_athlete(user_id: int, current_user = Depends(get_current_user)):
+def delete_athlete(user_id: int, current_user = Depends(get_current_staff_user)):
     conn = get_db_connection()
     
     # Vérifier si l'athlète existe
