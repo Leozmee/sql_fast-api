@@ -4,15 +4,14 @@ import plotly.express as px
 from utils.api import get_performances, add_performance, update_performance, delete_performance
 
 def show_performances():
-    # Détermine si c'est une vue admin ou utilisateur
+   
     is_admin_view = st.session_state.is_staff
     
     if is_admin_view:
         st.title("Gestion des performances")
     else:
         st.title("Mes performances")
-        
-    # Afficher les performances existantes
+
     performances = get_performances(st.session_state.user_id)
     
     if performances:
@@ -83,7 +82,6 @@ def show_performances():
     else:
         st.info("Aucune performance enregistrée.")
     
-    # Seul un admin peut ajouter des performances
     if is_admin_view:
         st.subheader("Ajouter une nouvelle performance")
         with st.form("add_performance_form"):

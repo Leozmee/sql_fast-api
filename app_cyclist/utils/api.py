@@ -2,10 +2,8 @@ import requests
 import streamlit as st
 import pandas as pd
 
-# Configuration de l'API
 API_URL = "http://127.0.0.1:8000"
 
-# Fonction pour obtenir les informations d'un athlète par ID
 def get_athlete_info(user_id):
     try:
         headers = {"Authorization": f"Bearer {st.session_state.token}"}
@@ -22,7 +20,6 @@ def get_athlete_info(user_id):
         st.error(f"Erreur: {str(e)}")
         return None
 
-# Fonction pour créer un nouvel athlète
 def create_athlete(user_id, gender, age, weight, height):
     try:
         headers = {
@@ -50,7 +47,6 @@ def create_athlete(user_id, gender, age, weight, height):
         st.error(f"Erreur: {str(e)}")
         return False
 
-# Fonction pour mettre à jour un athlète
 def update_athlete(user_id, gender, age, weight, height):
     try:
         headers = {
@@ -77,43 +73,57 @@ def update_athlete(user_id, gender, age, weight, height):
         st.error(f"Erreur: {str(e)}")
         return False
 
-# Fonction pour obtenir les performances d'un utilisateur
 def get_performances(user_id):
     try:
         headers = {"Authorization": f"Bearer {st.session_state.token}"}
         
-        # Si l'utilisateur est admin, utiliser la route staff
         if st.session_state.is_staff:
             response = requests.get(f"{API_URL}/performances/user/{user_id}", headers=headers)
         else:
-            # Sinon, utiliser la route pour voir ses propres performances
+           
             response = requests.get(f"{API_URL}/performances/my-stats", headers=headers)
         
         if response.status_code == 200:
             return response.json()
         else:
-            st.error("Impossible de récupérer les performances")
+            st.error(f"Impossible de récupérer les performances (Status: {response.status_code})")
             return []
     except Exception as e:
         st.error(f"Erreur: {str(e)}")
         return []
 
-# Fonction pour obtenir les statistiques
 def get_stats():
     try:
         headers = {"Authorization": f"Bearer {st.session_state.token}"}
         response = requests.get(f"{API_URL}/performances/stats", headers=headers)
         
         if response.status_code == 200:
-            return response.json()
+            data = response.json()
+            # S'assurer que toutes les clés attendues existent
+            if not isinstance(data, dict):
+                data = {}
+            if "strongest_athlete" not in data:
+                data["strongest_athlete"] = None
+            if "highest_vo2max" not in data:
+                data["highest_vo2max"] = None
+            if "best_power_weight_ratio" not in data:
+                data["best_power_weight_ratio"] = None
+            return data
         else:
-            st.error("Impossible de récupérer les statistiques")
-            return None
+            st.error(f"Impossible de récupérer les statistiques (Status: {response.status_code})")
+            return {
+                "strongest_athlete": None,
+                "highest_vo2max": None,
+                "best_power_weight_ratio": None
+            }
     except Exception as e:
         st.error(f"Erreur: {str(e)}")
-        return None
+        return {
+            "strongest_athlete": None,
+            "highest_vo2max": None,
+            "best_power_weight_ratio": None
+        }
 
-# Fonction pour obtenir le nom complet d'un utilisateur par ID
 def get_user_name_by_id(user_id):
     try:
         # Cette fonction est une simulation car l'API n'a pas d'endpoint pour ça
@@ -125,8 +135,6 @@ def get_user_name_by_id(user_id):
             user_data = response.json()
             return f"{user_data.get('first_name', '')} {user_data.get('last_name', '')}"
         
-        # Si ce n'est pas l'utilisateur actuel, nous n'avons pas d'endpoint pour obtenir les données
-        # donc nous renvoyons juste l'ID pour l'instant
         return f"Utilisateur #{user_id}"
     except Exception as e:
         return f"Utilisateur #{user_id}"
@@ -161,7 +169,6 @@ def add_performance(user_id, time, power, vo2_max, oxygen, cadence, heart_rate, 
         st.error(f"Erreur: {str(e)}")
         return False
     
-# Fonction pour récupérer une performance par ID
 def get_performance_by_id(performance_id):
     # Cette fonction est une simulation car l'API n'a pas d'endpoint spécifique
     # pour récupérer une performance par ID
@@ -171,7 +178,6 @@ def get_performance_by_id(performance_id):
             return perf
     return None
 
-# Fonction pour mettre à jour une performance
 def update_performance(performance_id, power, vo2_max, heart_rate, respiration_frequency, cadence):
     try:
         headers = {
@@ -208,7 +214,6 @@ def update_performance(performance_id, power, vo2_max, heart_rate, respiration_f
         st.error(f"Erreur: {str(e)}")
         return False
 
-# Fonction pour supprimer une performance
 def delete_performance(performance_id):
     try:
         headers = {"Authorization": f"Bearer {st.session_state.token}"}
@@ -225,3 +230,17 @@ def delete_performance(performance_id):
     except Exception as e:
         st.error(f"Erreur: {str(e)}")
         return False
+    
+def get_performances_by_username(username):
+    try:
+        headers = {"Authorization": f"Bearer {st.session_state.token}"}
+        response = requests.get(f"{API_URL}/performances/user_name/{username}", headers=headers)
+        
+        if response.status_code == 200:
+            return response.json()
+        else:
+            st.error(f"Impossible de récupérer les performances pour {username}")
+            return []
+    except Exception as e:
+        st.error(f"Erreur: {str(e)}")
+        return []

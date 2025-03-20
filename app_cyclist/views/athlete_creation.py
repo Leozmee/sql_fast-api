@@ -4,7 +4,6 @@ from utils.api import create_athlete
 def show_athlete_creation():
     st.title("Création d'un athlète")
     
-    # Vérification des permissions
     if not st.session_state.is_staff:
         st.warning("Vous n'avez pas les droits d'administrateur nécessaires pour créer des athlètes.")
         st.info("Veuillez contacter un administrateur si vous avez besoin de créer un profil d'athlète.")

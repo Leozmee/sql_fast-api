@@ -4,9 +4,8 @@ from utils.auth import logout
 def show_sidebar():
     with st.sidebar:
         st.subheader(f"Bonjour, {st.session_state.user_data.get('first_name', 'Utilisateur')}")
-        st.write(f"Rôle: {'Administrateur' if st.session_state.is_staff else 'Utilisateur'}")
+        st.write(f"Rôle: {'Coach' if st.session_state.is_staff else 'Utilisateur'}")
         
-        # Menu adapté selon le rôle
         if st.session_state.is_staff:
             menu = st.radio(
                 "Navigation",

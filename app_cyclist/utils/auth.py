@@ -17,7 +17,6 @@ def login(email, password):
             st.session_state.token = data["access_token"]
             st.session_state.authenticated = True
             
-            # Récupérer les informations de l'utilisateur
             user_data = get_user_info()
             if user_data:
                 st.session_state.user_data = user_data

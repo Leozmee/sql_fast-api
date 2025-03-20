@@ -4,7 +4,6 @@ from utils.api import get_athlete_info, get_user_name_by_id
 def show_profile():
     st.title("Mon profil")
     
-    # Infos utilisateur
     st.subheader("Informations utilisateur")
     if st.session_state.user_data:
         user_data = st.session_state.user_data
@@ -13,7 +12,6 @@ def show_profile():
         st.write(f"**Email**: {user_data.get('email', '')}")
         st.write(f"**Rôle**: {'Administrateur' if user_data.get('is_staff', False) else 'Utilisateur standard'}")
     
-    # Infos athlète - Note: les utilisateurs standards peuvent voir leurs infos mais pas les modifier
     st.subheader("Informations athlète")
     athlete_data = None
     try:

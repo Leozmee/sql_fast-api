@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
 import sqlite3
 from app.database import get_db_connection
-from app.models.performance import AthletePerformance, PerformanceResponse, StatsResponse
+from app.models.performance import AthletePerformance, PerformanceResponse, StatsResponse, StatsResponseWithNames
 from app.utils.security import get_current_user, get_current_staff_user
 
 router = APIRouter(prefix="/performances", tags=["performances"])
@@ -37,25 +37,30 @@ def add_performance(performance: AthletePerformance, current_user = Depends(get_
     finally:
         conn.close()
 
-@router.get("/stats", response_model=StatsResponse)
-def get_stats(current_user = Depends(get_current_user)):
+@router.get("/stats", response_model=StatsResponseWithNames)
+def get_stats_with_names(current_user = Depends(get_current_user)):
     conn = get_db_connection()
     cursor = conn.cursor()
     stats = {}
     
-    # Get strongest athlete
+    def get_username(user_id):
+        """ Récupère le nom d'utilisateur à partir d'un user_id. """
+        user = conn.execute("SELECT user_name FROM User WHERE id = ?", (user_id,)).fetchone()
+        return user["user_name"] if user else None
+    
+    # 🏋️‍♂️ Get strongest athlete (max power)
     strongest = cursor.execute(
         "SELECT user_id, MAX(power) as max_power FROM Performance GROUP BY user_id ORDER BY max_power DESC LIMIT 1"
     ).fetchone()
-    stats["strongest_athlete"] = strongest["user_id"] if strongest else None
+    stats["strongest_athlete"] = get_username(strongest["user_id"]) if strongest else None
     
-    # Get athlete with highest VO2max
+    # 🫁 Get athlete with highest VO2max
     highest_vo2max = cursor.execute(
         "SELECT user_id, MAX(oxygen) as max_oxygen FROM Performance GROUP BY user_id ORDER BY max_oxygen DESC LIMIT 1"
     ).fetchone()
-    stats["highest_vo2max"] = highest_vo2max["user_id"] if highest_vo2max else None
+    stats["highest_vo2max"] = get_username(highest_vo2max["user_id"]) if highest_vo2max else None
     
-    # Get best power to weight ratio
+    # ⚖️ Get best power to weight ratio
     best_ratio = cursor.execute(
         """
         SELECT Performance.user_id, MAX(Performance.power / Athlete.weight) AS ratio 
@@ -66,10 +71,11 @@ def get_stats(current_user = Depends(get_current_user)):
         LIMIT 1
         """
     ).fetchone()
-    stats["best_power_weight_ratio"] = best_ratio["user_id"] if best_ratio else None
+    stats["best_power_weight_ratio"] = get_username(best_ratio["user_id"]) if best_ratio else None
     
     conn.close()
     return stats
+
 
 @router.get("/user/{user_id}", response_model=List[PerformanceResponse])
 def get_user_performances(user_id: int, current_user = Depends(get_current_staff_user)):
@@ -143,3 +149,42 @@ def get_user_performances(current_user = Depends(get_current_user)):
         return []
         
     return [dict(p) for p in performances]
+
+
+@router.get("/all_users")
+def get_all_users():
+    """Récupère tous les utilisateurs pour déboguer"""
+    conn = get_db_connection()
+    try:
+        users = conn.execute("SELECT id, user_name, first_name, last_name FROM User").fetchall()
+        conn.close()
+        return [{"id": u["id"], "user_name": u["user_name"], 
+                "name": f"{u['first_name']} {u['last_name']}"} for u in users]
+    except Exception as e:
+        conn.close()
+        return {"error": str(e)}
+
+
+@router.get("/user_name/{user_name}", response_model=List[PerformanceResponse])
+def get_user_performances_by_username(user_name: str, current_user=Depends(get_current_staff_user)):
+    conn = get_db_connection()
+    
+    user = conn.execute(
+        "SELECT id FROM User WHERE user_name = ?",
+        (user_name,)
+    ).fetchone()
+    
+    if not user:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Utilisateur non trouvé")
+    
+    user_id = user["id"]
+
+    performances = conn.execute(
+        "SELECT * FROM Performance WHERE user_id = ? ORDER BY time ASC",
+        (user_id,)
+    ).fetchall()
+    
+    conn.close()
+
+    return [dict(p) for p in performances] if performances else []
