@@ -117,6 +117,9 @@ def main():
         elif selected_page == "Statistiques":
             from views.statistics import show_statistics
             show_statistics()
+        elif selected_page == "Comparaison générale":
+            from views.general_comparison import show_general_comparison
+            show_general_comparison()
 
 if __name__ == "__main__":
     main()
