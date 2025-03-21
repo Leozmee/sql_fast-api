@@ -48,19 +48,16 @@ def get_stats_with_names(current_user = Depends(get_current_user)):
         user = conn.execute("SELECT user_name FROM User WHERE id = ?", (user_id,)).fetchone()
         return user["user_name"] if user else None
     
-    # 🏋️‍♂️ Get strongest athlete (max power)
     strongest = cursor.execute(
         "SELECT user_id, MAX(power) as max_power FROM Performance GROUP BY user_id ORDER BY max_power DESC LIMIT 1"
     ).fetchone()
     stats["strongest_athlete"] = get_username(strongest["user_id"]) if strongest else None
     
-    # 🫁 Get athlete with highest VO2max
     highest_vo2max = cursor.execute(
         "SELECT user_id, MAX(oxygen) as max_oxygen FROM Performance GROUP BY user_id ORDER BY max_oxygen DESC LIMIT 1"
     ).fetchone()
     stats["highest_vo2max"] = get_username(highest_vo2max["user_id"]) if highest_vo2max else None
     
-    # ⚖️ Get best power to weight ratio
     best_ratio = cursor.execute(
         """
         SELECT Performance.user_id, MAX(Performance.power / Athlete.weight) AS ratio 
@@ -134,7 +131,6 @@ async def delete_performance(performance_id: int, current_user: dict = Depends(g
     finally:
         conn.close()
 
-# Route pour get les stats du current logged user
 @router.get("/my-stats", response_model=List[PerformanceResponse])
 def get_user_performances(current_user = Depends(get_current_user)):
     user_id = current_user["id"]
