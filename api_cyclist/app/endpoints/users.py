@@ -7,6 +7,7 @@ from app.utils.security import hash_password, get_current_user
 router = APIRouter(prefix="/users", tags=["users"])
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
+#Inscription d'un user
 def register_user(user: UserCreate):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -27,5 +28,6 @@ def register_user(user: UserCreate):
         conn.close()
 
 @router.get("/me", response_model=UserResponse)
+#Récupération des infos du user actuellement login
 def read_users_me(current_user = Depends(get_current_user)):
     return dict(current_user)

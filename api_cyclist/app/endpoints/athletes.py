@@ -7,6 +7,7 @@ from app.utils.security import get_current_staff_user
 router = APIRouter(prefix="/athletes", tags=["athletes"])
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
+#Création d'un athlète via le user_id
 def add_athlete(athlete: AthleteCreate, current_user = Depends(get_current_staff_user)):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -23,6 +24,7 @@ def add_athlete(athlete: AthleteCreate, current_user = Depends(get_current_staff
         conn.close()
 
 @router.get("/{user_id}", response_model=AthleteResponse)
+#Récupération d'un athlète selon son id
 def get_athlete(user_id: int, current_user = Depends(get_current_staff_user)):
     conn = get_db_connection()
     athlete = conn.execute("SELECT * FROM Athlete WHERE user_id = ?", (user_id,)).fetchone()
@@ -34,6 +36,7 @@ def get_athlete(user_id: int, current_user = Depends(get_current_staff_user)):
     return dict(athlete)
 
 @router.put("/{user_id}", response_model=AthleteResponse)
+#MAJ d'un athlète
 def update_athlete(user_id: int, athlete: AthleteCreate, current_user = Depends(get_current_staff_user)):
     # Vérifier si l'athlète existe
     conn = get_db_connection()
@@ -66,10 +69,10 @@ def update_athlete(user_id: int, athlete: AthleteCreate, current_user = Depends(
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}") from e
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+#Suppression d'un athlète
 def delete_athlete(user_id: int, current_user = Depends(get_current_staff_user)):
     conn = get_db_connection()
     
-    # Vérifier si l'athlète existe
     existing_athlete = conn.execute("SELECT * FROM Athlete WHERE user_id = ?", (user_id,)).fetchone()
     
     if existing_athlete is None:

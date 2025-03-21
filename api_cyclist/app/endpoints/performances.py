@@ -8,6 +8,7 @@ from app.utils.security import get_current_user, get_current_staff_user
 router = APIRouter(prefix="/performances", tags=["performances"])
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
+#création de la performance d'un user
 def add_performance(performance: AthletePerformance, current_user = Depends(get_current_staff_user)):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -38,6 +39,7 @@ def add_performance(performance: AthletePerformance, current_user = Depends(get_
         conn.close()
 
 @router.get("/stats", response_model=StatsResponseWithNames)
+#récupération des user_name des athlètes présentant les meilleurs métriques
 def get_stats_with_names(current_user = Depends(get_current_user)):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -73,8 +75,8 @@ def get_stats_with_names(current_user = Depends(get_current_user)):
     conn.close()
     return stats
 
-
 @router.get("/user/{user_id}", response_model=List[PerformanceResponse])
+#récupération des performances d'un user par le biais de son id
 def get_user_performances(user_id: int, current_user = Depends(get_current_staff_user)):
     conn = get_db_connection()
     performances = conn.execute(
@@ -85,6 +87,7 @@ def get_user_performances(user_id: int, current_user = Depends(get_current_staff
     return [dict(p) for p in performances] if performances else []
 
 @router.patch("/{performance_id}")
+#MAJ d'un performance selon son id
 async def update_performance(performance_id: int, performance: AthletePerformance, current_user: dict = Depends(get_current_staff_user)):
     print(current_user)
     conn = get_db_connection()
@@ -111,6 +114,7 @@ async def update_performance(performance_id: int, performance: AthletePerformanc
         conn.close()
 
 @router.delete("/{performance_id}")
+#Suppression d'une performance selon son id
 async def delete_performance(performance_id: int, current_user: dict = Depends(get_current_staff_user)):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -132,6 +136,7 @@ async def delete_performance(performance_id: int, current_user: dict = Depends(g
         conn.close()
 
 @router.get("/my-stats", response_model=List[PerformanceResponse])
+#Récupération des performances du user actuellement login
 def get_user_performances(current_user = Depends(get_current_user)):
     user_id = current_user["id"]
     conn = get_db_connection()
@@ -146,22 +151,8 @@ def get_user_performances(current_user = Depends(get_current_user)):
         
     return [dict(p) for p in performances]
 
-
-@router.get("/all_users")
-def get_all_users():
-    """Récupère tous les utilisateurs pour déboguer"""
-    conn = get_db_connection()
-    try:
-        users = conn.execute("SELECT id, user_name, first_name, last_name FROM User").fetchall()
-        conn.close()
-        return [{"id": u["id"], "user_name": u["user_name"], 
-                "name": f"{u['first_name']} {u['last_name']}"} for u in users]
-    except Exception as e:
-        conn.close()
-        return {"error": str(e)}
-
-
 @router.get("/user_name/{user_name}", response_model=List[PerformanceResponse])
+#Récupération des performances d'un user selon son user_name
 def get_user_performances_by_username(user_name: str, current_user=Depends(get_current_staff_user)):
     conn = get_db_connection()
     
@@ -184,3 +175,16 @@ def get_user_performances_by_username(user_name: str, current_user=Depends(get_c
     conn.close()
 
     return [dict(p) for p in performances] if performances else []
+
+@router.get("/all_users")
+#Récupération de tout les users
+def get_all_users():
+    conn = get_db_connection()
+    try:
+        users = conn.execute("SELECT id, user_name, first_name, last_name FROM User").fetchall()
+        conn.close()
+        return [{"id": u["id"], "user_name": u["user_name"], 
+                "name": f"{u['first_name']} {u['last_name']}"} for u in users]
+    except Exception as e:
+        conn.close()
+        return {"error": str(e)}
