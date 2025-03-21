@@ -3,13 +3,10 @@ from utils.auth import show_login_page
 from utils.session import initialize_session
 from components.sidebar import show_sidebar
 
-# Configuration de la page
 st.set_page_config(page_title="CycleTrack Pro", layout="wide")
 
-# Initialisation de la session
 initialize_session()
 
-# Style sportif dynamique
 sports_style = """
 <style>
     /* Palette de couleurs */
