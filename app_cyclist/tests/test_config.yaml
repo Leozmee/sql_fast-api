@@ -1,0 +1,131 @@
+# Configuration pour les tests de l'application CycleTrack Pro
+app:
+  api_url: "http://127.0.0.1:8000"
+  streamlit_url: "http://localhost:8501"
+
+# Configuration pour les tests unitaires
+unit_tests:
+  # Remplacer cette valeur par le chemin absolu vers votre base de données de test
+  database_url: "app_cyclist/tests/test_database.sqlite"
+  # Désactiver les messages streamlit pendant les tests
+  disable_streamlit_warnings: true
+
+# Configuration pour les tests d'authentification
+auth_tests:
+  test_user:
+    email: "test@example.com"
+    password: "password123"
+    first_name: "Test"
+    last_name: "User"
+    user_name: "testuser"
+    is_staff: "YES"
+
+# Configuration pour les tests API
+api_tests:
+  # Données de test pour un athlète
+  test_athlete:
+    user_id: 1
+    gender: "male"
+    age: 30
+    weight: 75.5
+    height: 180.0
+  
+  # Données de test pour une performance
+  test_performance:
+    user_id: 1
+    time: 3600
+    power: 250.0
+    vo2_max: 55.0
+    oxygen: 40
+    cadence: 90.0
+    heart_rate: 160.0
+    respiration_frequency: 30.0
+
+# Configuration pour les tests d'intégration
+integration_tests:
+  timeout: 5  # Timeout en secondes pour les requêtes API
+  max_retries: 3  # Nombre maximum de tentatives pour les requêtes API
+  # Liste des endpoints à tester
+  endpoints:
+    - path: "/token"
+      method: "POST"
+      auth_required: false
+    - path: "/users/register"
+      method: "POST"
+      auth_required: false
+    - path: "/users/me"
+      method: "GET"
+      auth_required: true
+    - path: "/athletes/1"
+      method: "GET"
+      auth_required: true
+    - path: "/performances/stats"
+      method: "GET"
+      auth_required: true
+    - path: "/performances/user/1"
+      method: "GET"
+      auth_required: true
+
+# Configuration pour les tests de charge
+load_tests:
+  # Nombre de requêtes simultanées pour chaque test
+  concurrent_requests: 50
+  # Nombre maximum de workers pour les requêtes simultanées
+  max_workers: 10
+  # Nombre de boucles pour les tests de charge
+  num_loops: 3
+  # Liste des tests de charge à exécuter
+  tests:
+    - name: "get_profile"
+      endpoint: "users/me"
+      method: "GET"
+      num_requests: 50
+    - name: "get_stats"
+      endpoint: "performances/stats"
+      method: "GET"
+      num_requests: 50
+    - name: "add_performance"
+      endpoint: "performances/"
+      method: "POST"
+      num_requests: 20
+      data_template: "test_performance"
+
+# Configuration des services Docker
+docker:
+  services:
+    db:
+      image: postgres:13
+      container_name: postgresql
+      restart: always
+      env_file:
+        - .env
+      ports:
+        - "5432:5432"
+      volumes:
+        - ./volumes/postgres_data:/var/lib/postgresql/data
+      networks:
+        - n8n_network
+    n8n:
+      image: n8nio/n8n
+      container_name: n8n
+      restart: always
+      env_file:
+        - .env
+      ports:
+        - "5678:5678"
+      volumes:
+        - ./volumes/n8n_data:/home/node/.n8n
+      networks:
+        - n8n_network
+      depends_on:
+        - db
+  networks:
+    n8n_network: {}
+
+# Variables d'environnement pour les tests
+environment:
+  DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/cyclist_test"
+  SECRET_KEY: "test_secret_key_for_testing_purposes_only"
+  ALGORITHM: "HS256"
+  ACCESS_TOKEN_EXPIRE_MINUTES: "60"
+  TEST_MODE: "true"
