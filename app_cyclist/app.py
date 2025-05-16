@@ -6,7 +6,7 @@ from components.sidebar import show_sidebar
 st.set_page_config(page_title="CycleTrack Pro", layout="wide")
 
 initialize_session()
-
+##
 sports_style = """
 <style>
     /* Palette de couleurs */
